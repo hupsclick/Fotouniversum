@@ -1,0 +1,47 @@
+:root{--coffee-modal-bg:#101014;--coffee-modal-card:#15151b;--coffee-modal-header:#202023;--coffee-modal-text:#b9b6b8;--coffee-modal-white:#f4f0e9;--coffee-modal-gold:#dfc77d;--coffee-modal-orange:#ff6b16;--coffee-modal-border:rgba(255,255,255,.11)}
+.coffee-trigger-button{width:auto;min-width:150px;height:40px;margin:0;padding:6px 18px;border:1px solid #1c1c1c;border-radius:10px;background-color:#1c1c1c;color:#f2e6d0;font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:400;line-height:1;cursor:pointer;
+  box-shadow:rgba(0,0,0,.09) 0 2px 1px,rgba(0,0,0,.09) 0 4px 2px,rgba(0,0,0,.09) 0 8px 4px,rgba(0,0,0,.09) 0 16px 8px;transition:background-color .3s,transform .2s,box-shadow .3s}
+.coffee-trigger-button:hover{background-color:#3a3a3a;transform:scale(1.05);box-shadow:0 4px 12px rgba(0,255,127,.4)}
+.coffee-trigger-button:focus-visible,.coffee-close-button:focus-visible,.coffee-paypal-button:focus-visible{outline:2px solid #00ff7f;outline-offset:3px}
+.coffee-modal-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;overflow-x:hidden;overflow-y:auto;padding:20px;background-color:rgba(0,0,0,.46)}
+.coffee-modal-overlay.is-open{display:flex}
+.coffee-modal-card{width:min(92vw,420px);max-height:min(94dvh,760px);overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:22px;
+  background:linear-gradient(180deg,var(--coffee-modal-header) 0%,var(--coffee-modal-card) 22%,var(--coffee-modal-bg) 100%);color:var(--coffee-modal-text);font-family:Georgia,"Times New Roman",serif;
+  box-shadow:0 24px 80px rgba(0,0,0,.72),0 0 0 1px rgba(255,255,255,.03) inset;animation:coffee-modal-in .25s ease-out both}
+.coffee-modal-header{padding:32px 24px 25px;border-bottom:1px solid var(--coffee-modal-border);background:radial-gradient(circle at 50% -40%,rgba(255,255,255,.12),transparent 62%);text-align:center}
+.coffee-modal-title{margin:0;color:var(--coffee-modal-white);font-size:clamp(22px,6vw,30px);font-weight:400;letter-spacing:.5px;line-height:1.1}
+.coffee-modal-title span{color:var(--coffee-modal-gold);font-style:italic}
+.coffee-modal-subtitle{margin-top:13px;color:#969298;font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:2px;line-height:1.65;text-transform:uppercase}
+.coffee-modal-email{display:block;color:var(--coffee-modal-orange);font-size:16px;font-weight:bold;letter-spacing:.5px;text-transform:none}
+.coffee-modal-content{max-height:min(62dvh,500px);overflow-y:auto;padding:27px 28px 22px;text-align:center;scrollbar-width:thin;scrollbar-color:rgba(255,107,22,.55) transparent}
+.coffee-modal-created-label{margin-bottom:7px;color:#969298;font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase}
+.coffee-modal-author{margin-bottom:23px;color:var(--coffee-modal-white);font-size:23px;line-height:1.2}
+.coffee-modal-author span{color:var(--coffee-modal-gold)}
+.coffee-modal-description{margin:0;color:var(--coffee-modal-text)!important;font-family:Georgia,"Times New Roman",serif;font-size:13px;line-height:1.7}
+.coffee-modal-thanks{display:block;margin-top:6px;color:var(--coffee-modal-orange)!important;font-size:18px;font-weight:bold;line-height:1.65}
+.coffee-modal-divider{height:1px;margin:25px 0 18px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent)}
+.coffee-modal-support-label{margin-bottom:13px;color:var(--coffee-modal-orange);font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.8px;text-transform:uppercase}
+.coffee-paypal-button{display:inline-flex;align-items:center;justify-content:center;gap:9px;width:min(100%,282px);min-height:48px;padding:10px 19px;border:1px solid rgba(0,134,255,.45);border-radius:28px;
+  background:linear-gradient(135deg,#0875da 0%,#0069c9 45%,#0754aa 100%);color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;text-decoration:none;white-space:nowrap;
+  box-shadow:0 8px 20px rgba(0,70,170,.25),0 0 0 1px rgba(255,255,255,.08) inset;transition:transform .2s ease,filter .2s ease,box-shadow .2s ease}
+.coffee-paypal-button:hover{filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,70,170,.38),0 0 0 1px rgba(255,255,255,.14) inset}
+.coffee-paypal-button:active{transform:translateY(0)}
+.coffee-paypal-logo{font-size:17px;letter-spacing:-1.3px}
+.coffee-paypal-logo-pay{color:#62c6ff}.coffee-paypal-logo-pal{color:#fff}
+.coffee-modal-hint{margin:13px 0 0;color:var(--coffee-modal-orange)!important;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;line-height:1.45}
+.coffee-modal-footer{display:flex;justify-content:center;padding:14px 20px 15px;border-top:1px solid var(--coffee-modal-border);background:rgba(0,0,0,.08)}
+.coffee-close-button{width:94px;height:32px;margin:0;padding:0;border:1px solid rgba(255,255,255,.16);border-radius:18px;background:rgba(255,255,255,.03);color:#b9b6b8;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1;cursor:pointer;transition:color .2s,border-color .2s,background-color .2s}
+.coffee-close-button:hover{border-color:rgba(255,255,255,.35);background-color:rgba(255,255,255,.08);color:#fff}
+@keyframes coffee-modal-in{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media screen and (max-width:768px) and (orientation:portrait){
+  .coffee-modal-overlay{padding:10px}.coffee-modal-card{width:calc(100vw - 20px);max-height:calc(100dvh - 28px)}
+  .coffee-modal-header{padding:27px 18px 21px}.coffee-modal-content{max-height:calc(100dvh - 220px);padding:23px 20px 19px}
+  .coffee-modal-description{font-size:12px}.coffee-modal-thanks{font-size:17px}}
+@media screen and (max-width:900px) and (orientation:landscape) and (max-height:600px){
+  .coffee-modal-overlay{padding:10px}.coffee-modal-card{width:min(88vw,560px);max-height:calc(100dvh - 20px)}
+  .coffee-modal-header{padding:17px 22px 14px}.coffee-modal-title{font-size:clamp(24px,5vw,34px)}.coffee-modal-subtitle{margin-top:6px}
+  .coffee-modal-content{max-height:calc(100dvh - 130px);padding:14px 25px 12px}.coffee-modal-author{margin-bottom:11px;font-size:19px}
+  .coffee-modal-description{font-size:11px;line-height:1.45}.coffee-modal-thanks{font-size:15px;line-height:1.35}
+  .coffee-modal-divider{margin:12px 0 9px}.coffee-modal-support-label{margin-bottom:7px;font-size:10px}
+  .coffee-paypal-button{min-height:38px;padding:7px 17px;font-size:12px}.coffee-modal-hint{margin-top:7px;font-size:10px}.coffee-modal-footer{padding:8px 20px}}
+@media (prefers-reduced-motion:reduce){.coffee-modal-card{animation:none}.coffee-trigger-button,.coffee-paypal-button,.coffee-close-button{transition:none}}

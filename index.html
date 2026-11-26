@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fotouniversum</title>
+<meta name="description" content="Professionelle Kamera-WebApp: scharfe Aufnahmen schneller Objekte, Makro und Fernaufnahmen als PNG.">
+<meta name="theme-color" content="#101014">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/coffee.css">
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <h1 class="brand">Foto<em>universum</em></h1>
+    <div class="clock" aria-live="off">
+      <time id="clockTime">--:--:--</time>
+      <span id="clockDate">--</span>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="stage" aria-label="Kameravorschau">
+      <video id="video" playsinline muted autoplay></video>
+      <div class="grid" aria-hidden="true"></div>
+      <div class="meter" aria-label="Schärfe"><div id="meterFill"></div></div>
+      <div id="status" class="status" role="status">Kamera wird gestartet …</div>
+      <div id="flash" class="flash"></div>
+    </section>
+
+    <section class="panel" aria-label="Steuerung">
+      <div class="modes" role="tablist" id="modes"></div>
+      <p id="modeHint" class="hint"></p>
+
+      <div class="sliders">
+        <label class="row" id="rowZoom"><span>Zoom</span><input id="zoom" type="range"><output id="zoomOut"></output></label>
+        <label class="row" id="rowFocus"><span>Fokus</span><input id="focus" type="range"><output id="focusOut"></output></label>
+        <label class="row" id="rowExp"><span>Belichtung</span><input id="exp" type="range"><output id="expOut"></output></label>
+        <label class="row" id="rowIso"><span>ISO</span><input id="iso" type="range"><output id="isoOut"></output></label>
+      </div>
+
+      <div class="opts">
+        <label>Serie
+          <select id="burst"><option value="1">1</option><option value="3">3</option><option value="6">6</option><option value="10">10</option></select>
+        </label>
+        <label class="chk"><input id="autosave" type="checkbox" checked> Automatisch speichern</label>
+        <button id="switchCam" class="ghost" type="button">Kamera wechseln</button>
+      </div>
+
+      <div class="shutter-wrap">
+        <button id="shutter" class="shutter" type="button" aria-label="Foto aufnehmen"><span></span></button>
+      </div>
+
+      <div id="gallery" class="gallery" aria-label="Aufnahmen"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>© <span id="year">2026</span> Manfred Häcker – Alle Rechte vorbehalten · v<span id="ver"></span></span>
+    <span class="foot-actions">
+      <button id="installBtn" class="ghost" type="button" hidden>Installieren</button>
+      <button id="coffeeTrigger" class="coffee-trigger-button" type="button" aria-haspopup="dialog" aria-controls="coffeeModal">Kaffee</button>
+    </span>
+  </footer>
+</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<div id="coffeeModal" class="coffee-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="coffeeModalTitle" aria-hidden="true">
+  <section class="coffee-modal-card" role="document">
+    <header class="coffee-modal-header">
+      <h2 id="coffeeModalTitle" class="coffee-modal-title">FOTOUNIVERSUM <span>1.0</span></h2>
+      <div class="coffee-modal-subtitle">Eine Private App von Hupsclick
+        <span class="coffee-modal-email">@gmx.de</span></div>
+    </header>
+    <div class="coffee-modal-content">
+      <div class="coffee-modal-created-label">Erstellt von</div>
+      <div class="coffee-modal-author">Manfred&nbsp;<span>Häcker</span></div>
+      <p class="coffee-modal-description">
+        FOTOUNIVERSUM überträgt keine Daten an mich als Entwickler. Alle Aufnahmen bleiben auf deinem Gerät.
+        Dennoch kann ich keine Verantwortung für Datenverarbeitungen übernehmen, die durch das verwendete Gerät, den Browser,
+        das Betriebssystem oder installierte Drittanbieter-Dienste erfolgen. Die Nutzung erfolgt auf eigene Verantwortung.
+        <span class="coffee-modal-thanks">Danke, dass du meine App verwendest.</span>
+      </p>
+      <div class="coffee-modal-divider"></div>
+      <div class="coffee-modal-support-label">☕ Hat dir die App gefallen?</div>
+      <a class="coffee-paypal-button" href="https://www.paypal.me/ManfredKaffee" target="_blank" rel="noopener noreferrer">
+        <span class="coffee-paypal-logo"><span class="coffee-paypal-logo-pay">Pay</span><span class="coffee-paypal-logo-pal">Pal</span></span>
+        Kauf mir einen Kaffee
+      </a>
+      <p class="coffee-modal-hint">Jeder Kaffee hilft, weitere Projekte zu realisieren ✦</p>
+    </div>
+    <footer class="coffee-modal-footer">
+      <button id="coffeeClose" class="coffee-close-button" type="button">Schließen</button>
+    </footer>
+  </section>
+</div>
+
+<script src="vendor/imgtools.js"></script>
+<script src="js/coffee.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

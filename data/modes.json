@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "modes": [
+    { "id": "auto", "label": "Auto", "hint": "Dauerhafter Autofokus für alltägliche Motive.",
+      "focus": "continuous", "zoom": 1, "exposure": "continuous", "burst": 1, "still": true },
+    { "id": "fast", "label": "Schnell", "hint": "Kurze Belichtung (ca. 1/1000 s) und Serie: das schärfste Bild wird automatisch gewählt.",
+      "focus": "continuous", "zoom": 1, "exposure": "fast", "shutter100us": 10, "isoShare": 0.6, "burst": 6, "still": false, "fps": 60 },
+    { "id": "macro", "label": "Makro", "hint": "Fokus auf Nahdistanz. Gerät ruhig halten und mit dem Fokus-Regler feinjustieren.",
+      "focus": "near", "zoom": 1, "exposure": "continuous", "burst": 3, "still": true },
+    { "id": "far", "label": "Fern", "hint": "Fokus auf Unendlich mit Zoom. Für ruhige Aufnahmen Gerät abstützen.",
+      "focus": "far", "zoomShare": 0.35, "exposure": "continuous", "burst": 3, "still": true }
+  ]
+}
