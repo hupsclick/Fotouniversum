@@ -1,6 +1,6 @@
 "use strict";
 (function () {
-  const APP_VERSION = "1.0.1"; /* identisch mit VERSION in sw.js halten */
+  const APP_VERSION = "1.1.0"; /* identisch mit VERSION in sw.js halten */
   const $ = id => document.getElementById(id);
   const video = $("video"), statusEl = $("status"), toast = $("toast");
 
@@ -137,12 +137,44 @@
   }
 
   /* ---------- Regler ---------- */
+  // Interne Position 0..1000; Belichtung/ISO logarithmisch -> feinfühlig im unteren Bereich
+  const POS = 1000;
   const sl = {
     zoom: { el: $("zoom"), row: $("rowZoom"), out: $("zoomOut"), fmt: v => (+v).toFixed(1) + "×" },
     focusDistance: { el: $("focus"), row: $("rowFocus"), out: $("focusOut"), fmt: v => (+v).toFixed(2) + " m" },
-    exposureTime: { el: $("exp"), row: $("rowExp"), out: $("expOut"), fmt: v => "1/" + Math.round(10000 / Math.max(+v, 0.0001)) + " s" },
-    iso: { el: $("iso"), row: $("rowIso"), out: $("isoOut"), fmt: v => Math.round(v) }
+    exposureTime: { el: $("exp"), row: $("rowExp"), out: $("expOut"), log: true, fmt: v => "1/" + Math.round(10000 / Math.max(+v, 0.0001)) + " s" },
+    iso: { el: $("iso"), row: $("rowIso"), out: $("isoOut"), log: true, fmt: v => Math.round(v) }
   };
+  const sliderById = {};
+  for (const k in sl) sliderById[sl[k].el.id] = k;
+
+  function posToVal(s, p) {
+    const f = p / POS;
+    if (s.log && s.min > 0) return s.min * Math.pow(s.max / s.min, f);
+    return s.min + (s.max - s.min) * f;
+  }
+  function valToPos(s, v) {
+    v = Math.max(s.min, Math.min(s.max, +v));
+    if (s.max === s.min) return 0;
+    if (s.log && s.min > 0) return Math.round(POS * Math.log(v / s.min) / Math.log(s.max / s.min));
+    return Math.round(POS * (v - s.min) / (s.max - s.min));
+  }
+  function snap(s, v) {
+    if (s.step > 0 && !s.log) v = s.min + Math.round((v - s.min) / s.step) * s.step;
+    return Math.max(s.min, Math.min(s.max, v));
+  }
+  function paint(s) { s.el.style.setProperty("--fill", (s.el.value / POS * 100) + "%"); }
+
+  // Nur der jeweils neueste Wert wird angewendet -> keine Verzögerung beim Ziehen
+  const pending = {}; let pumping = false;
+  async function pump() {
+    if (pumping) return; pumping = true;
+    while (Object.keys(pending).length) {
+      const k = Object.keys(pending)[0], adv = pending[k]; delete pending[k];
+      await apply(adv);
+    }
+    pumping = false;
+  }
 
   function buildSliders() {
     for (const k in sl) {
@@ -150,19 +182,21 @@
       const supported = c && typeof c.min === "number" && c.max > c.min;
       s.row.hidden = !supported;
       if (!supported) continue;
-      s.el.min = c.min;
-      s.el.max = c.max;
-      s.el.step = c.step || (c.max - c.min) / 100;
+      s.min = c.min; s.max = c.max; s.step = c.step || 0;
+      s.el.min = 0; s.el.max = POS; s.el.step = 1;
       const cur = (settings[k] != null ? settings[k] : c.min);
-      s.el.value = cur;
-      s.out.textContent = s.fmt(s.el.value);
-      s.el.oninput = async () => {
-        s.out.textContent = s.fmt(s.el.value);
+      s.el.value = valToPos(s, cur);
+      s.out.textContent = s.fmt(cur);
+      paint(s);
+      s.el.oninput = () => {
+        const v = snap(s, posToVal(s, +s.el.value));
+        s.out.textContent = s.fmt(v);
+        paint(s);
         const adv = {};
         if (k === "focusDistance") adv.focusMode = "manual";
         if (k === "exposureTime" || k === "iso") adv.exposureMode = "manual";
-        adv[k] = +s.el.value;
-        await apply(adv);
+        adv[k] = v;
+        pending[k] = adv; pump();
       };
     }
   }
@@ -170,10 +204,75 @@
   function setSlider(k, v) {
     const s = sl[k];
     if (s && !s.row.hidden) {
-      s.el.value = v;
+      s.el.value = valToPos(s, v);
       s.out.textContent = s.fmt(v);
+      paint(s);
     }
   }
+
+  // +/- Tasten (mit Dauerdruck-Wiederholung) für Feineinstellung
+  document.querySelectorAll(".step").forEach(btn => {
+    let timer = null, rep = null;
+    const go = () => {
+      const k = sliderById[btn.dataset.for], s = sl[k];
+      if (!s || s.row.hidden) return;
+      const d = +btn.dataset.dir * 10; // 1 % pro Schritt
+      s.el.value = Math.max(0, Math.min(POS, +s.el.value + d));
+      s.el.oninput && s.el.oninput();
+    };
+    const stop = () => { clearTimeout(timer); clearInterval(rep); };
+    btn.addEventListener("pointerdown", e => { e.preventDefault(); go(); timer = setTimeout(() => { rep = setInterval(go, 70); }, 380); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach(ev => btn.addEventListener(ev, stop));
+    btn.addEventListener("contextmenu", e => e.preventDefault());
+  });
+
+  /* ---------- Pinch-Zoom auf der Vorschau ---------- */
+  (function () {
+    const stage = $("stage"), pts = new Map(); let d0 = 0, z0 = 1, hideT = null;
+    const dist = () => { const a = [...pts.values()]; return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); };
+    stage.addEventListener("pointerdown", e => {
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pts.size === 2 && sl.zoom && !sl.zoom.row.hidden) { d0 = dist(); z0 = snap(sl.zoom, posToVal(sl.zoom, +sl.zoom.el.value)); }
+    });
+    stage.addEventListener("pointermove", e => {
+      if (!pts.has(e.pointerId)) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const s = sl.zoom;
+      if (pts.size !== 2 || !s || s.row.hidden || !d0) return;
+      const v = Math.max(s.min, Math.min(s.max, z0 * dist() / d0));
+      s.el.value = valToPos(s, v);
+      s.el.oninput();
+      const b = $("zoomBadge"); b.textContent = s.fmt(v); b.hidden = false;
+      clearTimeout(hideT); hideT = setTimeout(() => b.hidden = true, 900);
+    });
+    const up = e => { pts.delete(e.pointerId); if (pts.size < 2) d0 = 0; };
+    ["pointerup", "pointercancel", "pointerleave"].forEach(ev => stage.addEventListener(ev, up));
+    // Tippen auf die Vorschau schließt das Einstellungsfenster
+    stage.addEventListener("click", () => setSheet(false));
+  })();
+
+  /* ---------- Einstellungsfenster (Bottom-Sheet) ---------- */
+  function syncDock() { document.documentElement.style.setProperty("--dock-h", document.querySelector(".dock").offsetHeight + "px"); }
+  function setSheet(open, tab) {
+    const sh = $("sheet");
+    if (tab) showTab(tab);
+    sh.hidden = !open;
+    $("settingsBtn").setAttribute("aria-expanded", open && (tab || curTab) === "ctrl" ? "true" : "false");
+    syncDock();
+  }
+  let curTab = "ctrl";
+  function showTab(t) {
+    curTab = t;
+    document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === t ? "true" : "false"));
+    document.querySelectorAll(".pane").forEach(p => p.hidden = p.dataset.pane !== t);
+  }
+  document.querySelectorAll(".tab").forEach(b => b.onclick = () => { showTab(b.dataset.tab); $("settingsBtn").setAttribute("aria-expanded", b.dataset.tab === "ctrl" ? "true" : "false"); });
+  $("settingsBtn").onclick = () => { const open = $("sheet").hidden || curTab !== "ctrl"; setSheet(open, "ctrl"); };
+  $("galleryBtn").onclick = () => { const open = $("sheet").hidden || curTab !== "gal"; setSheet(open, "gal"); };
+  $("sheetClose").onclick = () => setSheet(false);
+  window.addEventListener("resize", syncDock);
+  window.addEventListener("orientationchange", () => setTimeout(syncDock, 200));
+  syncDock();
   const has = (k, v) => caps[k] && (!v || (Array.isArray(caps[k]) ? caps[k].includes(v) : true));
 
   /* ---------- Modi ---------- */
@@ -201,6 +300,7 @@
       b.setAttribute("aria-selected", b.dataset.id === m.id ? "true" : "false");
     });
     $("modeHint").textContent = m.hint || "";
+    if (m.hint) note(m.label + ": " + m.hint.split(". ")[0].replace(/\.$/, ""), 2200);
     if ($("burst")) $("burst").value = String(m.burst || 1);
 
     if (!track) return; // Kamera noch nicht bereit – Einstellungen werden beim Start angewendet
@@ -331,6 +431,9 @@
     a.appendChild(img);
     const g = $("gallery");
     g.prepend(a);
+    $("lastThumb").src = url; $("lastThumb").hidden = false; $("lastThumbEmpty").hidden = true;
+    $("galEmpty").hidden = true;
+    if (navigator.vibrate) navigator.vibrate(30);
     if (++count > 24) {
       const l = g.lastElementChild;
       if (l) { URL.revokeObjectURL(l.href); l.remove(); }

@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Fotouniversum</title>
 <meta name="description" content="Professionelle Kamera-WebApp: scharfe Aufnahmen schneller Objekte, Makro und Fernaufnahmen als PNG.">
 <meta name="theme-color" content="#101014">
@@ -22,48 +22,73 @@
     </div>
   </header>
 
-  <main class="main">
-    <section class="stage" aria-label="Kameravorschau">
-      <video id="video" playsinline muted autoplay></video>
-      <div class="grid" aria-hidden="true"></div>
-      <div class="meter" aria-label="Schärfe"><div id="meterFill"></div></div>
-      <div id="status" class="status" role="status">Kamera wird gestartet …</div>
-      <div id="flash" class="flash"></div>
-    </section>
+  <section class="stage" id="stage" aria-label="Kameravorschau">
+    <video id="video" playsinline muted autoplay></video>
+    <div class="grid" aria-hidden="true"></div>
+    <div class="meter" aria-label="Schärfe"><div id="meterFill"></div></div>
+    <div id="status" class="status" role="status">Kamera wird gestartet …</div>
+    <div id="zoomBadge" class="zoom-badge" hidden></div>
+    <div id="flash" class="flash"></div>
+  </section>
 
-    <section class="panel" aria-label="Steuerung">
-      <div class="modes" role="tablist" id="modes"></div>
-      <p id="modeHint" class="hint"></p>
+  <!-- Einstellungen als Bottom-Sheet: Vorschau bleibt sichtbar -->
+  <section id="sheet" class="sheet" aria-label="Einstellungen" hidden>
+    <div class="sheet-head">
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab" role="tab" data-tab="ctrl" aria-selected="true">Regler</button>
+        <button type="button" class="tab" role="tab" data-tab="gal" aria-selected="false">Galerie</button>
+        <button type="button" class="tab" role="tab" data-tab="info" aria-selected="false">Info</button>
+      </div>
+      <button id="sheetClose" class="icon-btn" type="button" aria-label="Schließen">✕</button>
+    </div>
 
-      <div class="sliders">
-        <label class="row" id="rowZoom"><span>Zoom</span><input id="zoom" type="range"><output id="zoomOut"></output></label>
-        <label class="row" id="rowFocus"><span>Fokus</span><input id="focus" type="range"><output id="focusOut"></output></label>
-        <label class="row" id="rowExp"><span>Belichtung</span><input id="exp" type="range"><output id="expOut"></output></label>
-        <label class="row" id="rowIso"><span>ISO</span><input id="iso" type="range"><output id="isoOut"></output></label>
+    <div class="sheet-body">
+      <div class="pane" data-pane="ctrl">
+        <p id="modeHint" class="hint"></p>
+        <div class="sliders">
+          <div class="row" id="rowZoom"><div class="row-top"><label for="zoom">Zoom</label><output id="zoomOut"></output></div>
+            <div class="row-ctl"><button class="step" type="button" data-for="zoom" data-dir="-1" aria-label="Zoom kleiner">−</button><input id="zoom" type="range"><button class="step" type="button" data-for="zoom" data-dir="1" aria-label="Zoom größer">+</button></div></div>
+          <div class="row" id="rowFocus"><div class="row-top"><label for="focus">Fokus</label><output id="focusOut"></output></div>
+            <div class="row-ctl"><button class="step" type="button" data-for="focus" data-dir="-1" aria-label="Fokus näher">−</button><input id="focus" type="range"><button class="step" type="button" data-for="focus" data-dir="1" aria-label="Fokus weiter">+</button></div></div>
+          <div class="row" id="rowExp"><div class="row-top"><label for="exp">Belichtung</label><output id="expOut"></output></div>
+            <div class="row-ctl"><button class="step" type="button" data-for="exp" data-dir="-1" aria-label="Kürzer">−</button><input id="exp" type="range"><button class="step" type="button" data-for="exp" data-dir="1" aria-label="Länger">+</button></div></div>
+          <div class="row" id="rowIso"><div class="row-top"><label for="iso">ISO</label><output id="isoOut"></output></div>
+            <div class="row-ctl"><button class="step" type="button" data-for="iso" data-dir="-1" aria-label="ISO niedriger">−</button><input id="iso" type="range"><button class="step" type="button" data-for="iso" data-dir="1" aria-label="ISO höher">+</button></div></div>
+        </div>
+        <div class="opts">
+          <label class="opt">Serie
+            <select id="burst"><option value="1">1</option><option value="3">3</option><option value="6">6</option><option value="10">10</option></select>
+          </label>
+          <label class="chk"><input id="autosave" type="checkbox" checked> Automatisch speichern</label>
+        </div>
       </div>
 
-      <div class="opts">
-        <label>Serie
-          <select id="burst"><option value="1">1</option><option value="3">3</option><option value="6">6</option><option value="10">10</option></select>
-        </label>
-        <label class="chk"><input id="autosave" type="checkbox" checked> Automatisch speichern</label>
-        <button id="switchCam" class="ghost" type="button">Kamera wechseln</button>
+      <div class="pane" data-pane="gal" hidden>
+        <p id="galEmpty" class="hint">Noch keine Aufnahmen. Tippe auf einen Eintrag, um ihn zu speichern.</p>
+        <div id="gallery" class="gallery" aria-label="Aufnahmen"></div>
       </div>
 
-      <div class="shutter-wrap">
-        <button id="shutter" class="shutter" type="button" aria-label="Foto aufnehmen"><span></span></button>
+      <div class="pane" data-pane="info" hidden>
+        <p class="hint">© <span id="year">2026</span> Manfred Häcker – Alle Rechte vorbehalten · v<span id="ver"></span></p>
+        <div class="info-actions">
+          <button id="installBtn" class="ghost" type="button" hidden>App installieren</button>
+          <button id="coffeeTrigger" class="coffee-trigger-button" type="button" aria-haspopup="dialog" aria-controls="coffeeModal">Kaffee</button>
+        </div>
       </div>
+    </div>
+  </section>
 
-      <div id="gallery" class="gallery" aria-label="Aufnahmen"></div>
-    </section>
-  </main>
-
-  <footer class="foot">
-    <span>© <span id="year">2026</span> Manfred Häcker – Alle Rechte vorbehalten · v<span id="ver"></span></span>
-    <span class="foot-actions">
-      <button id="installBtn" class="ghost" type="button" hidden>Installieren</button>
-      <button id="coffeeTrigger" class="coffee-trigger-button" type="button" aria-haspopup="dialog" aria-controls="coffeeModal">Kaffee</button>
-    </span>
+  <!-- Bedienleiste: Auslöser immer sichtbar, kein Scrollen -->
+  <footer class="dock">
+    <div class="modes" role="tablist" id="modes"></div>
+    <div class="dock-main">
+      <button id="galleryBtn" class="thumb-btn" type="button" aria-label="Galerie öffnen"><img id="lastThumb" alt="" hidden><span id="lastThumbEmpty">▣</span></button>
+      <button id="shutter" class="shutter" type="button" aria-label="Foto aufnehmen"><span></span></button>
+      <div class="dock-right">
+        <button id="switchCam" class="icon-btn big" type="button" aria-label="Kamera wechseln">⟲</button>
+        <button id="settingsBtn" class="icon-btn big" type="button" aria-label="Einstellungen" aria-expanded="false" aria-controls="sheet">⚙</button>
+      </div>
+    </div>
   </footer>
 </div>
 
@@ -74,7 +99,7 @@
     <header class="coffee-modal-header">
       <h2 id="coffeeModalTitle" class="coffee-modal-title">FOTOUNIVERSUM <span>1.0</span></h2>
       <div class="coffee-modal-subtitle">Eine Private App von Hupsclick
-        <span class="coffee-modal-email">@gmx.de</span></div>
+        <span class="coffee-modal-email">regiemail@gmx.de</span></div>
     </header>
     <div class="coffee-modal-content">
       <div class="coffee-modal-created-label">Erstellt von</div>

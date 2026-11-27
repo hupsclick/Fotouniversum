@@ -1,5 +1,5 @@
 /* Fotouniversum Service Worker – Version bei jedem Update erhöhen */
-const VERSION = '1.0.1';
+const VERSION = '1.1.0';
 const CACHE = 'fotouniversum-' + VERSION;
 const ASSETS = [
   './', './index.html', './manifest.json',
